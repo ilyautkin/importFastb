@@ -128,9 +128,10 @@ Ext.extend(importFastb.panel.Import, MODx.FormPanel, {
             MODx.Ajax.request({
             	url: importFastb.config.connector_url
             	,params: {
-            		action: 'mgr/link/import',
+            		action: 'mgr/prices/import',
             		parsed: true,
-            		step:   response.object.step || 1
+					filename: response.object.filename || '',
+            		step:   response.object.step || 0
             	}
             	,listeners: {
             		success: {fn: function(response) {

@@ -14,7 +14,6 @@ class rldExportProcessor extends modProcessor {
 		if (!$_POST['exported']) {
 			$limit = 100;
 			$offset = $_POST['step'] ? $_POST['step'] * $limit : 0;
-			// Уникализировать SKU
 
 			$q = $this->modx->newQuery('modResource');
 			$q->select(
@@ -65,9 +64,9 @@ class rldExportProcessor extends modProcessor {
 			for ($i = 0; $i < count($cache); $i++) {
 				$cache[$i]['PRICE'] = str_replace(" ","", $cache[$i]['PRICE']);
 				$cache[$i]['PRICE'] = str_replace(",",".", $cache[$i]['PRICE']);
-				$sheet->setCellValueByColumnAndRow(0,$i+$offset,$cache[$i]['SKU']);
-				$sheet->setCellValueByColumnAndRow(1,$i+$offset,$cache[$i]['pagetitle']);
-				$sheet->setCellValueByColumnAndRow(2,$i+$offset,$cache[$i]['PRICE']);
+				$sheet->setCellValueByColumnAndRow(0,$i+1,$cache[$i]['SKU']);
+				$sheet->setCellValueByColumnAndRow(1,$i+1,$cache[$i]['pagetitle']);
+				$sheet->setCellValueByColumnAndRow(2,$i+1,$cache[$i]['PRICE']);
 				
 				// Применяем выравнивание
 				$sheet->getStyleByColumnAndRow(0, $i)->getAlignment()->

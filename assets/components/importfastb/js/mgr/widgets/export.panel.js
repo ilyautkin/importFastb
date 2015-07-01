@@ -26,7 +26,7 @@ importFastb.panel.Export = function (config) {
 			}
         }, {
             xtype: 'modx-panel',
-            id: config.id + '-log',
+            id: config.id + '-export-log',
             anchor: '100%',
             autoHeight: true,
             cls: 'panel-desc',
@@ -48,8 +48,8 @@ Ext.extend(importFastb.panel.Export, MODx.FormPanel, {
     
     _showFileName: function(e) {
         document.getElementById(e.target.id + 'name-holder').innerHTML = this.files[0].name;
-        Ext.getCmp('importfastb-export-panel-log').body.dom.innerHTML = "";
-        document.getElementById('importfastb-export-panel-log').style.display = "none";
+        Ext.getCmp('importfastb-export-panel-export-log').body.dom.innerHTML = "";
+        document.getElementById('importfastb-export-panel-export-log').style.display = "none";
         /*document.getElementById(e.target.config.id + '-csv-file-btn').classList.add('x-item-disabled');
         e.target.setAttribute("disabled", "disabled");*/
     },
@@ -79,14 +79,14 @@ Ext.extend(importFastb.panel.Export, MODx.FormPanel, {
     
     _processexport: function(response) {
         var lineSeparator = '<br />';
-        var logcontainer = document.getElementById(this.config.id + '-log');
-        var currentlog = Ext.getCmp(this.config.id + '-log').body.dom.innerHTML;
+        var logcontainer = document.getElementById(this.config.id + '-export-log');
+        var currentlog = Ext.getCmp(this.config.id + '-export-log').body.dom.innerHTML;
         var exportlog = currentlog ? currentlog.split(lineSeparator) : [];
         if (logcontainer.style.display == "none") {
             logcontainer.style.display = "block";
         }
         exportlog = exportlog.concat(response.object.log);
-	    Ext.getCmp(this.config.id + '-log').update(exportlog.join(lineSeparator));
+	    Ext.getCmp(this.config.id + '-export-log').update(exportlog.join(lineSeparator));
         logcontainer.scrollTop = logcontainer.scrollHeight;
         if (!response.object.complete) {
             MODx.Ajax.request({
@@ -94,7 +94,7 @@ Ext.extend(importFastb.panel.Export, MODx.FormPanel, {
             	,params: {
             		action: 'mgr/prices/export',
             		parsed: true,
-            		step:   response.object.step || 1,
+            		step:   response.object.step || 0,
 					filename: response.object.filename || '',
 					exported: response.object.exported || ''
             	}
