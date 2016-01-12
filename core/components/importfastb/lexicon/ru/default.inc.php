@@ -1,8 +1,8 @@
 <?php
 include_once 'setting.inc.php';
 
-$_lang['importfastb'] = 'Обновление цен';
-$_lang['importfastb_menu_desc'] = 'Дополнение для экспорта и испорта цен';
+$_lang['importfastb'] = 'Импорт товаров';
+$_lang['importfastb_menu_desc'] = 'Дополнение для импорта товаров';
 $_lang['importfastb_intro_msg'] = 'Выгрузка цен всех товаров, у которых проставлен артикул';
 
 $_lang['importfastb_items'] = 'Ссылки';

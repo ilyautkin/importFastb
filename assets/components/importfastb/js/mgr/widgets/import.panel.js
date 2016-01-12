@@ -121,7 +121,7 @@ Ext.extend(importFastb.panel.Import, MODx.FormPanel, {
         if (logcontainer.style.display == "none") {
             logcontainer.style.display = "block";
         }
-        importlog = importlog.concat(response.object.log);
+	    importlog = importlog.concat(response.object.log);
 	    Ext.getCmp(this.config.id + '-log').update(importlog.join(lineSeparator));
         logcontainer.scrollTop = logcontainer.scrollHeight;
         if (!response.object.complete) {
@@ -129,12 +129,16 @@ Ext.extend(importFastb.panel.Import, MODx.FormPanel, {
             	url: importFastb.config.connector_url
             	,params: {
             		action: 'mgr/prices/import',
-            		parsed: true,
-					filename: response.object.filename || '',
-            		step:   response.object.step || 0
+            		parsed: response.object.parsed || 0,
+            		step:   response.object.step || 0,
+					filename: response.object.filename || ''
             	}
             	,listeners: {
             		success: {fn: function(response) {
+            		    var indicator = document.getElementById('processing-xls');
+						if (indicator) {
+							indicator.setAttribute('class', '');
+						}
             			this._processImport(response)
             		}, scope: this}
             	}
