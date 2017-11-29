@@ -16,19 +16,21 @@ class rldExportProcessor extends modProcessor {
 			$offset = $_POST['step'] ? $_POST['step'] * $limit : 0;
 
 			$q = $this->modx->newQuery('modResource');
-			$q->select(
-						'`modResource`.`id` AS `resource`,
-						`modResource`.`pagetitle` as `pagetitle`,
-						`SKU`.`value` AS `SKU`,
-						`PRICE`.`value` AS `PRICE`'
-					);
-			$q->where(array('`SKU`.`value`:!=' => '', 'AND:`SKU`.`tmplvarid`:=' => 2));
-			$q->rightJoin('modTemplateVarResource', 'SKU', '`modResource`.`id` = `SKU`.`contentid` AND `SKU`.`tmplvarid` = 2');
-			$q->leftJoin('modTemplateVarResource', 'PRICE', '`modResource`.`id` = `PRICE`.`contentid` AND `PRICE`.`tmplvarid` = 3');
-			$q->sortby('`SKU`.`value`','ASC');
+			$q->select('
+					     `modResource`.`id` AS `resource`
+					    ,`modResource`.`pagetitle` as `pagetitle`
+					    ,`modResource`.`longtitle` as `longtitle`
+					    ,`modResource`.`description` as `description`
+					    ,`modResource`.`alias` as `alias`
+					    ,`modResource`.`content` as `content`
+					    ,`Parent`.`pagetitle` as `category`
+					');
+			$q->leftJoin('modResource', 'Parent', '`modResource`.`parent` = `Parent`.`id`');
+			$q->sortby('`Parent`.`menuindex`','ASC');
+			$q->sortby('`modResource`.`menuindex`','ASC');
 			$count = $this->modx->getCount('modResource', $q);
 			if ($offset == 0) {
-				$object['log'][] = 'Общее количество товаров, у которых указан артикул: '.$count;
+				$object['log'][] = 'Общее количество страниц: '.$count;
 			}
 			$q->limit($limit, $offset);
 			$q->prepare();
@@ -36,6 +38,7 @@ class rldExportProcessor extends modProcessor {
 			//print $this->modx->getCount('modTemplateVarResource', $q);
 			$q->stmt->execute();
 			$res = $q->stmt->fetchAll(PDO::FETCH_ASSOC);
+			//print_r($res); die();
 			$this->modx->cacheManager->set($key, array_merge($cache, $res));
 			
 			$total = $offset + $limit;
@@ -44,14 +47,16 @@ class rldExportProcessor extends modProcessor {
 				$total = $count;
 			}
 			$object['step'] = $_POST['step'] + 1;
-			$object['log'][] = $object['step'].'. Выгружено товаров '.$total.' из '.$count;
+			$object['log'][] = $object['step'].'. Выгружено страниц '.$total.' из '.$count;
 			if ($object['exported'] == true) {
-				$object['log'][] = '<span id="creating-xls" class="loading-indicator">Товары выгружены. Создаём XLS-файл...</span>';
+				$object['log'][] = 'Страницы выгружены. Создаём XLS-файл...';
 			}
 		} else {
 			// Подключаем класс для работы с excel
-			require_once($this->modx->getOption('core_path').'components/phpexcell/Classes/PHPExcel.php');
-			require_once($this->modx->getOption('core_path').'components/phpexcell/Classes/PHPExcel/Writer/Excel5.php');
+			require_once($this->modx->getOption('core_path').'components/importfastb/Classes/PHPExcel.php');
+			require_once($this->modx->getOption('core_path').'components/importfastb/Classes/PHPExcel/Writer/Excel5.php');
+			// require_once($this->modx->getOption('base_path').'importFastb/core/components/importfastb/Classes/PHPExcel.php');
+			// require_once($this->modx->getOption('base_path').'importFastb/core/components/importfastb/Classes/PHPExcel/Writer/Excel5.php');
 			
 			$xls = new PHPExcel();
 			// Устанавливаем индекс активного листа
@@ -59,26 +64,70 @@ class rldExportProcessor extends modProcessor {
 			// Получаем активный лист
 			$sheet = $xls->getActiveSheet();
 			// Подписываем лист
-			$sheet->setTitle('База товаров сайта');
+			$sheet->setTitle('База страниц сайта');
 
+		    $col = 0;
+			$sheet->setCellValueByColumnAndRow($col,1,'ID');
+			$col++;
+
+			if ($_POST['category'] == 'true') {
+			    $sheet->setCellValueByColumnAndRow($col,1,'Category');
+			    $col++;
+			}
+			if ($_POST['pagetitle'] == 'true') {
+			    $sheet->setCellValueByColumnAndRow($col,1,'Title');
+			    $col++;
+			}
+			if ($_POST['longtitle'] == 'true') {
+			    $sheet->setCellValueByColumnAndRow($col,1,'H1');
+			    $col++;
+			}
+			if ($_POST['description'] == 'true') {
+			    $sheet->setCellValueByColumnAndRow($col,1,'Description');
+			    $col++;
+			}
+			if ($_POST['alias'] == 'true') {
+			    $sheet->setCellValueByColumnAndRow($col,1,'URL');
+			    $col++;
+			}
+			if ($_POST['content'] == 'true') {
+			    $sheet->setCellValueByColumnAndRow($col,1,'Content');
+			    $col++;
+			}
+			
 			for ($i = 0; $i < count($cache); $i++) {
-				$cache[$i]['PRICE'] = str_replace(" ","", $cache[$i]['PRICE']);
-				$cache[$i]['PRICE'] = str_replace(",",".", $cache[$i]['PRICE']);
-				$sheet->setCellValueByColumnAndRow(0,$i+1,$cache[$i]['SKU']);
-				$sheet->setCellValueByColumnAndRow(1,$i+1,$cache[$i]['pagetitle']);
-				$sheet->setCellValueByColumnAndRow(2,$i+1,$cache[$i]['PRICE']);
-				
-				// Применяем выравнивание
-				$sheet->getStyleByColumnAndRow(0, $i)->getAlignment()->
-						setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
-				$sheet->getStyleByColumnAndRow(2, $i)->getAlignment()->
-						setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
-				$sheet->getStyleByColumnAndRow(2, $i)->getNumberFormat()->
-						setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_00);
+			    $col = 0;
+				$sheet->setCellValueByColumnAndRow($col,$i+2,$cache[$i]['resource']);
+				$col++;
+    			if ($_POST['category'] == 'true') {
+    				$sheet->setCellValueByColumnAndRow($col,$i+2,$cache[$i]['category']);
+    				$col++;
+    			}
+    			if ($_POST['pagetitle'] == 'true') {
+    				$sheet->setCellValueByColumnAndRow($col,$i+2,$cache[$i]['pagetitle']);
+    				$col++;
+    			}
+    			if ($_POST['longtitle'] == 'true') {
+    				$sheet->setCellValueByColumnAndRow($col,$i+2,$cache[$i]['longtitle']);
+    				$col++;
+    			}
+    			if ($_POST['description'] == 'true') {
+    				$sheet->setCellValueByColumnAndRow($col,$i+2,$cache[$i]['description']);
+    				$col++;
+    			}
+    			if ($_POST['alias'] == 'true') {
+    				$sheet->setCellValueByColumnAndRow($col,$i+2,$cache[$i]['alias']);
+    				$col++;
+    			}
+    			if ($_POST['content'] == 'true') {
+    				$sheet->setCellValueByColumnAndRow($col,$i+2,$cache[$i]['content']);
+    				$col++;
+    			}
 			}
 			$sheet->getColumnDimension('A')->setAutoSize(true);
+			/*
 			$sheet->getColumnDimension('B')->setAutoSize(true);
-			$sheet->getColumnDimension('C')->setAutoSize(true);
+			*/
 			// Выводим содержимое файла
 			$objWriter = new PHPExcel_Writer_Excel5($xls);
 			$cacheDir = $this->modx->getOption('core_path').'cache/default/importfastb/export/';

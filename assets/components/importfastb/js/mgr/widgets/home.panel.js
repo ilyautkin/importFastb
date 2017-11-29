@@ -19,7 +19,7 @@ importFastb.panel.Home = function (config) {
 			defaults: {border: false, autoHeight: true},
 			border: true,
 			hideMode: 'offsets',
-			items: [/*{
+			items: [{
                 title: _('export'),
 				layout: 'anchor',
 				items: [{
@@ -29,7 +29,7 @@ importFastb.panel.Home = function (config) {
 					xtype: 'importfastb-export-panel',
 					cls: 'main-wrapper',
 				}]
-			},*/ {
+			}, {
                 title: _('importfastb_import'),
 				layout: 'anchor',
 				items: [{

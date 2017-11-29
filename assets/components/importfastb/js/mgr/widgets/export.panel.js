@@ -15,6 +15,46 @@ importFastb.panel.Export = function (config) {
 		},
 
 		items: [{
+            xtype: 'panel',
+            style: {"margin-bottom":"15px"},
+            items: [{
+                xtype: 'xcheckbox',
+                name: 'category',
+                id: 'export-category-checkbox',
+                boxLabel: 'Category',
+                checked: true
+            }, {
+                xtype: 'xcheckbox',
+                name: 'pagetitle',
+                id: 'export-pagetitle-checkbox',
+                boxLabel: 'Title',
+                checked: true
+            }, {
+                xtype: 'xcheckbox',
+                name: 'longtitle',
+                id: 'export-longtitle-checkbox',
+                boxLabel: 'H1',
+                checked: true
+            }, {
+                xtype: 'xcheckbox',
+                name: 'description',
+                id: 'export-description-checkbox',
+                boxLabel: 'Description',
+                checked: true
+            }, {
+                xtype: 'xcheckbox',
+                name: 'alias',
+                id: 'export-alias-checkbox',
+                boxLabel: 'URL',
+                checked: true
+            }, {
+                xtype: 'xcheckbox',
+                name: 'content',
+                id: 'export-content-checkbox',
+                boxLabel: 'Content',
+                checked: true
+            }]
+        }, {
             xtype: 'button',
             text: _('importfastb_export_start'),
             fieldLabel: _('importfastb_export_start'),
@@ -96,7 +136,13 @@ Ext.extend(importFastb.panel.Export, MODx.FormPanel, {
             		parsed: true,
             		step:   response.object.step || 0,
 					filename: response.object.filename || '',
-					exported: response.object.exported || ''
+					exported: response.object.exported || '',
+					category: Ext.getCmp('export-category-checkbox').checked,
+					pagetitle: Ext.getCmp('export-pagetitle-checkbox').checked,
+					longtitle: Ext.getCmp('export-longtitle-checkbox').checked,
+					description: Ext.getCmp('export-description-checkbox').checked,
+					alias: Ext.getCmp('export-alias-checkbox').checked,
+					content: Ext.getCmp('export-content-checkbox').checked,
             	}
             	,listeners: {
             		success: {fn: function(response) {

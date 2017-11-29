@@ -1,9 +1,9 @@
 <?php
 include_once 'setting.inc.php';
 
-$_lang['importfastb'] = 'Импорт товаров';
-$_lang['importfastb_menu_desc'] = 'Дополнение для импорта товаров';
-$_lang['importfastb_intro_msg'] = 'Выгрузка цен всех товаров, у которых проставлен артикул';
+$_lang['importfastb'] = 'Импорт страниц';
+$_lang['importfastb_menu_desc'] = 'Импорт и экспорт страниц сайта';
+$_lang['importfastb_intro_msg'] = 'Выгрузка всех страниц сайта';
 
 $_lang['importfastb_items'] = 'Ссылки';
 $_lang['importfastb_item_id'] = 'Id';
