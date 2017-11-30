@@ -1,3 +1,3 @@
 ## importFastb
 
-MODX addon for linking resources through site
+MODX addon for export/import resources in site

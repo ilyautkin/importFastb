@@ -27,10 +27,14 @@ class rldImportProcessor extends modProcessor {
 			if (empty($headers)) {
 			    return $this->failure();
 			}
-			$h = array();
+			$h = $tvnames = array();
 			foreach ($headers as $k => $header) {
 			    if (!empty($header)) {
-			        $h[$header] = $k;
+			        if (substr($header, 0, 3) == 'TV_') {
+			            $tvnames[str_replace('TV_', '', $header)] = $k;
+			        } else {
+			            $h[$header] = $k;
+			        }
 			    }
 			}
 			foreach($data as $k => $row) {
@@ -52,6 +56,10 @@ class rldImportProcessor extends modProcessor {
 			    }
 			    if (isset($h['Content']) && $h['Content']) {
 			        $data['content'] = $row[$h['Content']];
+			    }
+			    $tvs = array();
+			    foreach ($tvnames as $tv => $pos) {
+			        $tvs[$tv] = $row[$pos];
 			    }
 			    // Проверяем - не пустая ли строка получена
 			    $row_is_empty = true;
@@ -87,12 +95,21 @@ class rldImportProcessor extends modProcessor {
 			        $resource = $this->modx->getObject('modResource', $data['id']);
 			        $resource->set('published', true);
 			    }
-			    if ($data['content']) {
-			        $data['content'] = str_replace('&lt;', '<', str_replace('&gt;', '>', $data['content']));
-			        $data['content'] = str_replace('&quot;', '"', $data['content']);
+			    foreach ($data as $k => $v) {
+    			    if ($data[$k]) {
+    			        $data[$k] = str_replace('&lt;',   '<', $data[$k]);
+    			        $data[$k] = str_replace('&gt;',   '>', $data[$k]);
+    			        $data[$k] = str_replace('&quot;', '"', $data[$k]);
+    			        $data[$k] = str_replace('&amp;',  '&', $data[$k]);
+    			    }
 			    }
 			    
 			    $resource->fromArray($data);
+			    if (!empty($tvs)) {
+			        foreach($tvs as $tv => $val) {
+			            $resource->setTVValue($tv,$val);
+			        }
+			    }
 			    $resource->save();
 			    
 			    $log_row = '';
@@ -165,35 +182,28 @@ class rldImportProcessor extends modProcessor {
                 			$exit = true;	
                 			continue;		
                 		}
+                		$field_empty = false;
                 		if ($i == 1) {
-                		    $headers = array(
-						        trim(htmlspecialchars($objWorksheet->getCellByColumnAndRow(0, $i)->getValue())),
-						        trim(htmlspecialchars($objWorksheet->getCellByColumnAndRow(1, $i)->getValue())),
-						        trim(htmlspecialchars($objWorksheet->getCellByColumnAndRow(2, $i)->getValue())),
-						        trim(htmlspecialchars($objWorksheet->getCellByColumnAndRow(3, $i)->getValue())),
-						        trim(htmlspecialchars($objWorksheet->getCellByColumnAndRow(4, $i)->getValue())),
-						        trim(htmlspecialchars($objWorksheet->getCellByColumnAndRow(5, $i)->getValue())),
-						        trim(htmlspecialchars($objWorksheet->getCellByColumnAndRow(6, $i)->getValue())),
-						        trim(htmlspecialchars($objWorksheet->getCellByColumnAndRow(7, $i)->getValue())),
-						        trim(htmlspecialchars($objWorksheet->getCellByColumnAndRow(8, $i)->getValue())),
-						        trim(htmlspecialchars($objWorksheet->getCellByColumnAndRow(9, $i)->getValue()))
-						    );
+                		    $headers = array();
+                		    $j = 0;
+                		    while (!$field_empty) {
+                		        $val = trim(htmlspecialchars($objWorksheet->getCellByColumnAndRow($j, $i)->getValue()));
+                		        if ($val) {
+                    		        $headers[] = $val;
+                    		        $j++;
+                		        } else {
+                		            $field_empty = true;
+                		        }
+                		    }
                             if (!empty($headers)) {
                                 $this->modx->cacheManager->set($key . '_headers', $headers);
                             }
                 		} else {
-						    $data[] = array(
-						        trim(htmlspecialchars($objWorksheet->getCellByColumnAndRow(0, $i)->getValue())),
-						        trim(htmlspecialchars($objWorksheet->getCellByColumnAndRow(1, $i)->getValue())),
-						        trim(htmlspecialchars($objWorksheet->getCellByColumnAndRow(2, $i)->getValue())),
-						        trim(htmlspecialchars($objWorksheet->getCellByColumnAndRow(3, $i)->getValue())),
-						        trim(htmlspecialchars($objWorksheet->getCellByColumnAndRow(4, $i)->getValue())),
-						        trim(htmlspecialchars($objWorksheet->getCellByColumnAndRow(5, $i)->getValue())),
-						        trim(htmlspecialchars($objWorksheet->getCellByColumnAndRow(6, $i)->getValue())),
-						        trim(htmlspecialchars($objWorksheet->getCellByColumnAndRow(7, $i)->getValue())),
-						        trim(htmlspecialchars($objWorksheet->getCellByColumnAndRow(8, $i)->getValue())),
-						        trim(htmlspecialchars($objWorksheet->getCellByColumnAndRow(9, $i)->getValue()))
-						    );
+                		    $data_row = array();
+                		    for ($j = 0; $j < count($headers); $j++) {
+                		        $data_row[] = trim(htmlspecialchars($objWorksheet->getCellByColumnAndRow($j, $i)->getValue()));
+                		    }
+						    $data[] = $data_row;
                 		}
                 	}
                 	$objPHPExcel->disconnectWorksheets(); 		//чистим 

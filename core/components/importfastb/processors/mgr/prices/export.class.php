@@ -94,6 +94,22 @@ class rldExportProcessor extends modProcessor {
 			    $sheet->setCellValueByColumnAndRow($col,1,'Content');
 			    $col++;
 			}
+			if ($_POST['tvs'] == 'true') {
+			    $c = $this->modx->newQuery('modResource');
+			    $c->leftJoin('modTemplateVarTemplate', 'modTemplateVarTemplate', '`modResource`.`template` = `modTemplateVarTemplate`.`templateid`');
+			    $c->leftJoin('modTemplateVar', 'modTemplateVar', '`modTemplateVar`.`id` = `modTemplateVarTemplate`.`tmplvarid`');
+			    $c->leftJoin('modTemplateVarResource', 'modTemplateVarResource', '`modTemplateVar`.`id` = `modTemplateVarResource`.`tmplvarid`');
+			    $c->select('`modTemplateVar`.`name` as `name`, `modTemplateVar`.`id` as `tmplvarid`, IFNULL(`modTemplateVarResource`.`value`, "") as `value`');
+			    // $c->where(array('modResource.id' => 1));
+			    $c->groupby('`modTemplateVar`.`id`');
+			    $c->prepare();
+    			$c->stmt->execute();
+    			$tvs = $c->stmt->fetchAll(PDO::FETCH_ASSOC);
+    			foreach ($tvs as $tv) {
+    			    $sheet->setCellValueByColumnAndRow($col,1,'TV_' . $tv['name']);
+    			    $col++;
+    			}
+			}
 			
 			for ($i = 0; $i < count($cache); $i++) {
 			    $col = 0;
@@ -122,6 +138,18 @@ class rldExportProcessor extends modProcessor {
     			if ($_POST['content'] == 'true') {
     				$sheet->setCellValueByColumnAndRow($col,$i+2,$cache[$i]['content']);
     				$col++;
+    			}
+    			if ($_POST['tvs'] == 'true') {
+        			foreach ($tvs as $tv) {
+        			    $c = $this->modx->newQuery('modTemplateVarResource');
+        			    $c->select('IFNULL(`modTemplateVarResource`.`value`, "") as `value`');
+        			    $c->where(array('modTemplateVarResource.contentid' => $cache[$i]['resource'], 'tmplvarid' => $tv['tmplvarid']));
+        			    $c->prepare();
+            			$c->stmt->execute();
+            			$tv_value = array_shift($c->stmt->fetchAll(PDO::FETCH_ASSOC));
+        				$sheet->setCellValueByColumnAndRow($col,$i+2,$tv_value['value']);
+        				$col++;
+        			}
     			}
 			}
 			$sheet->getColumnDimension('A')->setAutoSize(true);

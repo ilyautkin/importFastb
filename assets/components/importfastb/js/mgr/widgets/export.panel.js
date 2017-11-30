@@ -53,6 +53,12 @@ importFastb.panel.Export = function (config) {
                 id: 'export-content-checkbox',
                 boxLabel: 'Content',
                 checked: true
+            }, {
+                xtype: 'xcheckbox',
+                name: 'tvs',
+                id: 'export-tvs-checkbox',
+                boxLabel: 'TVs',
+                checked: false
             }]
         }, {
             xtype: 'button',
@@ -143,6 +149,7 @@ Ext.extend(importFastb.panel.Export, MODx.FormPanel, {
 					description: Ext.getCmp('export-description-checkbox').checked,
 					alias: Ext.getCmp('export-alias-checkbox').checked,
 					content: Ext.getCmp('export-content-checkbox').checked,
+					tvs: Ext.getCmp('export-tvs-checkbox').checked,
             	}
             	,listeners: {
             		success: {fn: function(response) {
