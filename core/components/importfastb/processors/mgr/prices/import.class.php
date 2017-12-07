@@ -97,10 +97,10 @@ class rldImportProcessor extends modProcessor {
 			    }
 			    foreach ($data as $k => $v) {
     			    if ($data[$k]) {
+    			        $data[$k] = str_replace('&amp;',  '&', $data[$k]);
     			        $data[$k] = str_replace('&lt;',   '<', $data[$k]);
     			        $data[$k] = str_replace('&gt;',   '>', $data[$k]);
     			        $data[$k] = str_replace('&quot;', '"', $data[$k]);
-    			        $data[$k] = str_replace('&amp;',  '&', $data[$k]);
     			    }
 			    }
 			    
@@ -175,8 +175,9 @@ class rldImportProcessor extends modProcessor {
                 	$objPHPExcel->setActiveSheetIndex(0);		//устанавливаем индекс активной страницы
                 	$objWorksheet = $objPHPExcel->getActiveSheet();	//делаем активной нужную страницу
                 	for ($i = $startRow; $i < $startRow + $chunkSize; $i++) {	//внутренний цикл по строкам
-                		$value = trim(htmlspecialchars($objWorksheet->getCellByColumnAndRow(0, $i)->getValue()));		//получаем первое знаение в строке
-                		if (empty($value))		//проверяем значение на пустоту
+                		$value2 = trim(htmlspecialchars($objWorksheet->getCellByColumnAndRow(2, $i)->getValue()));		//получаем второе значение в строке
+                		$value3 = trim(htmlspecialchars($objWorksheet->getCellByColumnAndRow(3, $i)->getValue()));		//получаем третье значение в строке
+                		if (empty($value2) && empty($value3))		//проверяем значение на пустоту
                 			$empty_value++;			
                 		if ($empty_value == 3) {		//после трех пустых значений, завершаем обработку файла, думая, что это конец
                 			$exit = true;	
@@ -208,7 +209,7 @@ class rldImportProcessor extends modProcessor {
                 	}
                 	$objPHPExcel->disconnectWorksheets(); 		//чистим 
                 	unset($objPHPExcel); 						//память
-                	$startRow += $chunkSize;					//переходим на следующий шаг цикла, увеличивая строку, с которой будем читать файл
+                	$startRow = $startRow + $chunkSize;			//переходим на следующий шаг цикла, увеличивая строку, с которой будем читать файл
                 }
 				
                 if (!$this->hasErrors()) {
