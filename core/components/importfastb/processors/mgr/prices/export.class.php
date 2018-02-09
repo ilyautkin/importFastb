@@ -107,14 +107,14 @@ class rldExportProcessor extends modProcessor {
     			    $c->leftJoin('modTemplateVarTemplate', 'modTemplateVarTemplate', '`modResource`.`template` = `modTemplateVarTemplate`.`templateid`');
     			    $c->leftJoin('modTemplateVar', 'modTemplateVar', '`modTemplateVar`.`id` = `modTemplateVarTemplate`.`tmplvarid`');
     			    $c->leftJoin('modTemplateVarResource', 'modTemplateVarResource', '`modTemplateVar`.`id` = `modTemplateVarResource`.`tmplvarid`');
-    			    $c->select('`modTemplateVar`.`name` as `name`, `modTemplateVar`.`id` as `tmplvarid`, IFNULL(`modTemplateVarResource`.`value`, "") as `value`');
+    			    $c->select('`modTemplateVar`.`name` as `name`, `modTemplateVar`.`type` as `type`, `modTemplateVar`.`id` as `tmplvarid`, IFNULL(`modTemplateVarResource`.`value`, "") as `value`');
     			    // $c->where(array('modResource.id' => 1));
     			    $c->groupby('`modTemplateVar`.`id`');
     			    $c->prepare();
         			$c->stmt->execute();
         			$tvs = $c->stmt->fetchAll(PDO::FETCH_ASSOC);
         			foreach ($tvs as $k => $tv) {
-        			    if ($tv['name']) {
+        			    if ($tv['name'] && $tv['type'] != 'migx') {
             			    $sheet->setCellValueByColumnAndRow($col,1,'TV_' . $tv['name']);
             			    $col++;
         			    } else {
